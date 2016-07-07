@@ -6,5 +6,5 @@ import java.net.HttpURLConnection;
  * Created by sblin on 7/7/2016.
  */
 public interface SystemLinkHttpConnection {
-    public HttpURLConnection getConnection();
+    HttpURLConnection getConnection();
 }

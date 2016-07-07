@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLConnection;
+import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 
 /**
@@ -33,7 +33,6 @@ public class SystemLinkHttpRequestImpl implements SystemLinkHttpRequest {
     @Value("${http.charset}")
     private String charset;
 
-    private StringBuffer buffer;
     private String encodedRequest;
 
     // Create logger
@@ -44,14 +43,11 @@ public class SystemLinkHttpRequestImpl implements SystemLinkHttpRequest {
      */
     public void init() {
 
-        // Create the System Link request
-        this.buffer = this.createSystemLinkRequest();
-
         try {
 
             // Encode the request
             this.encodedRequest = URLEncoder.encode("SystemLinkRequest", this.charset) + "=" +
-                URLEncoder.encode(buffer.toString(), this.charset);
+                URLEncoder.encode(this.createSystemLinkRequest().toString(), this.charset);
 
         } catch (UnsupportedEncodingException e) {
 
@@ -67,22 +63,23 @@ public class SystemLinkHttpRequestImpl implements SystemLinkHttpRequest {
     private StringBuffer createSystemLinkRequest() {
 
         // Create temp buffer to hold setup
-        StringBuffer tempBuffer = new StringBuffer();
+        StringBuffer buffer = new StringBuffer();
 
         // Create buffer content
-        tempBuffer
-                .append("<?xml version'1.0' encoding='" + this.charset + "'?>")
-                .append("<System-Link>")
-                .append("<Login userId='" + this.userName + "' ")
-                .append("password='" + this.password + "' maxIdle='0' ")
-                .append("properties='com.mapics.cas.domain.EnvironmentId=" + this.environmentID)
-                .append(", com.mapics.cas.domain.SystemName=" + this.systemName)
-                .append(", com.mapics.cas.user.LanguageId=en'/>")
-                .append("<Request sessionHandle='*current' workHandle='*new' broker='EJB' maxIdle='1000'></Request>")
-                .append("</System-Link>");
+        buffer
+            .append("<?xml version='1.0' encoding='" + this.charset + "'?>")
+            .append("<!DOCTYPE System-Link SYSTEM 'SystemLinkRequest.dtd'>")
+            .append("<System-Link>")
+            .append("<Login userId='" + this.userName + "' ")
+            .append("password='" + this.password + "' maxIdle='0' ")
+            .append("properties='com.mapics.cas.domain.EnvironmentId=" + this.environmentID)
+            .append(", com.mapics.cas.domain.SystemName=" + this.systemName)
+            .append(", com.mapics.cas.user.LanguageId=en'/>")
+            .append("<Request sessionHandle='*current' workHandle='*new' broker='EJB' maxIdle='1000'></Request>")
+            .append("</System-Link>");
 
         // Return the string buffer
-        return tempBuffer;
+        return buffer;
     }
 
     /**
@@ -90,7 +87,7 @@ public class SystemLinkHttpRequestImpl implements SystemLinkHttpRequest {
      * @param connection the HTTP connection
      * @return true if request was sent successfully
      */
-    public boolean sendSystemLinkRequest(URLConnection connection) {
+    public boolean sendSystemLinkRequest(HttpURLConnection connection) {
 
         try {
 
@@ -104,8 +101,15 @@ public class SystemLinkHttpRequestImpl implements SystemLinkHttpRequest {
             outputStream.flush();
             outputStream.close();
 
-            // Request was successful, return true
-            return true;
+            // Verify response code == 200
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+
+                // Request was successful, return true
+                return true;
+            }
+
+            // Failed request
+            return false;
 
         } catch (IOException e) {
 
