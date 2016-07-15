@@ -7,4 +7,6 @@ import java.io.BufferedReader;
  */
 public interface SystemLinkHttpResponse {
     void readSystemLinkResponse(BufferedReader reader);
+    boolean isErred();
+    boolean isLoggedIn();
 }

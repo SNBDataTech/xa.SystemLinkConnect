@@ -50,8 +50,8 @@ public class SystemLinkHttpConnectionImpl implements SystemLinkHttpConnection {
             // Create URL to AS400
             this.url = new URL(this.systemURL);
 
-            // Connect to the AS400
-            this.connect();
+            // Open connection to the AS400
+            this.openConnection();
 
         } catch (IOException e) {
 
@@ -61,10 +61,10 @@ public class SystemLinkHttpConnectionImpl implements SystemLinkHttpConnection {
     }
 
     /**
-     * Create the HTTP URL connection
+     * Open the HTTP connection
      * @throws IOException
      */
-    private void connect() throws IOException {
+    private void openConnection() throws IOException {
 
         // Open the URL connection
         this.connection = (HttpURLConnection) this.url.openConnection();

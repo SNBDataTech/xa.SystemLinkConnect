@@ -1,6 +1,6 @@
 package com.snbdatatech.xa.SystemLinkConnect;
 
-import com.snbdatatech.xa.SystemLinkConnect.service.router.AppStartupRouter;
+import com.snbdatatech.xa.SystemLinkConnect.controller.SystemLinkController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,11 +24,15 @@ public class App {
         // Create the context to load Bean configuration file
         context = new ClassPathXmlApplicationContext("beans.xml");
 
-        // Create startup router and start system link request
-        AppStartupRouter router = (AppStartupRouter) context.getBean("appStartupRouter");
-        router.startSystemLinkRequest();
+        // Create controller and process system link request
+        SystemLinkController controller = (SystemLinkController) context.getBean("appController");
 
-        LOGGER.info("##### PROCESS COMPLETE #####");
+        // Determine if System Link is available
+        if(controller.isSystemLinkAvailable()) {
+            LOGGER.info("##### SYSTEM LINK IS AVAILABLE #####");
+        } else {
+            LOGGER.info("##### SYSTEM LINK IS NOT AVAILABLE #####");
+        }
 
         // Create Hook to destroy all active Beans
         ((AbstractApplicationContext) context).registerShutdownHook();

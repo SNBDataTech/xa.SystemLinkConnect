@@ -15,7 +15,7 @@
     <context:annotation-config/>
 
     <!-- Configure Packages to Scan -->
-    <context:component-scan base-package="com.snbdatatech.xa.SystemLinkConnect.service" />
+    <context:component-scan base-package="com.snbdatatech.xa.SystemLinkConnect" />
 
     <!-- Load in Application Property Files -->
     <bean 	id="appProperties"
@@ -31,5 +31,5 @@
     </bean>
 
     <!-- Definition for Start Up Router -->
-    <bean	id="appStartupRouter" class="com.snbdatatech.xa.SystemLinkConnect.service.router.AppStartupRouter"></bean>
+    <bean	id="appController" class="com.snbdatatech.xa.SystemLinkConnect.controller.SystemLinkController"></bean>
 </beans>
