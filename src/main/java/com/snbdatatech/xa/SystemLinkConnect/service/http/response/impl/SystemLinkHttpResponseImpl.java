@@ -22,11 +22,14 @@ public class SystemLinkHttpResponseImpl implements SystemLinkHttpResponse {
     @Value("${systemLink.response.slTagName}")
     private String slTagName;
 
+    @Value("${systemLink.response.exceptionTagName}")
+    private String exceptionTagName;
+
     @Value("${systemLink.response.loginTagName}")
     private String loginTagName;
 
-    @Value("${systemLink.response.exceptionTagName}")
-    private String exceptionTagName;
+    @Value("${systemLink.response.loginActionAttribute}")
+    private String loginActionAttribute;
 
     private SAXReader saxReader;
     private boolean erred;
@@ -43,7 +46,7 @@ public class SystemLinkHttpResponseImpl implements SystemLinkHttpResponse {
         // Initialize reader
         this.saxReader = new SAXReader();
 
-        // Set default status variables
+        // Set default status variables -- opposite of positive SL connection
         this.erred = true;
         this.loggedIn = false;
     }
@@ -66,10 +69,10 @@ public class SystemLinkHttpResponseImpl implements SystemLinkHttpResponse {
             if (root.getName().equals(this.slTagName)) {
 
                 // Determine if exception occurred
-                this.erred = this.didExceptionOccur(root.element(this.exceptionTagName));
+                this.erred = this.didExceptionOccur(root);
 
                 // Determine if login was successful
-                this.loggedIn = this.wasLoginSuccessful(root.element(this.loginTagName));
+                this.loggedIn = this.wasLoginSuccessful(root);
             }
 
         } catch (DocumentException e) {
@@ -79,13 +82,55 @@ public class SystemLinkHttpResponseImpl implements SystemLinkHttpResponse {
         }
     }
 
-    private boolean didExceptionOccur(Element element) {
+    /**
+     * Determine if the System Link response contains an exception tag
+     * @param root Document Root
+     * @return true if there was an exception
+     */
+    private boolean didExceptionOccur(Element root) {
 
+        // Get the exception tag
+        Element exception = root.element(this.exceptionTagName);
+
+        // Determine if exception was found
+        if (exception != null) {
+
+            // Log the SL exception
+            this.logger.error("There was an exception in the response from SystemLink.  Exception Name: [" +
+                    exception.attributeValue("name") + "]");
+
+            // Exception was found
+            return true;
+        }
+
+        // No exception was found
         return false;
     }
 
-    private boolean wasLoginSuccessful(Element element) {
-        return true;
+    /**
+     * Determine if login attempt to SL was successful
+     * @param root Document root
+     * @return true if login attempt was successfull
+     */
+    private boolean wasLoginSuccessful(Element root) {
+
+        // Get the login Node from the response
+        Node login = root.element(this.loginTagName);
+
+        // Determine if Login node was found and is an element
+        if ((login != null) && (login.getNodeType() == Node.ELEMENT_NODE)) {
+
+            // Get the login status from the action attribute
+            boolean loginStatus = Boolean.parseBoolean(((Element) login).attributeValue(this.loginActionAttribute));
+
+            // Determine if login was successful
+            if (loginStatus) {
+                return true;
+            }
+        }
+
+        // Login attempt was unsuccessful
+        return false;
     }
 
     public boolean isErred() {

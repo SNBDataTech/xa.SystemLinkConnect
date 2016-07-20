@@ -24,7 +24,7 @@ public class App {
         // Create the context to load Bean configuration file
         context = new ClassPathXmlApplicationContext("beans.xml");
 
-        // Create controller and process system link request
+        // Create controller to process system link request
         SystemLinkController controller = (SystemLinkController) context.getBean("appController");
 
         // Determine if System Link is available
