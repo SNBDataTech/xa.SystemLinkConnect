@@ -127,6 +127,11 @@ public class SystemLinkHttpResponseImpl implements SystemLinkHttpResponse {
             if (loginStatus) {
                 return true;
             }
+
+            // Log the failed login attempt
+            this.logger.error("There was an error trying to log into SystemLink.  The tag [" + this.loginTagName +
+                "] did not return the value required in its [" + this.loginActionAttribute + "] attribute.  Looking" +
+                " for [true] but received [" + ((Element) login).attributeValue(this.loginActionAttribute) + "].");
         }
 
         // Login attempt was unsuccessful
